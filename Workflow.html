@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>LeRobot &#x547d;&#x4ee4;&#x53c2;&#x8003; &lpar;LeRobot Command Reference&rpar;</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css">
+<link href="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <h1 id="lerobot-命令参考-lerobot-command-reference">LeRobot 命令参考 (LeRobot Command Reference)</h1>
+<p>本文档提供了使用 <code>lerobot</code> 库进行机器人操作的常用命令，涵盖环境设置、硬件检查、数据采集、训练和推理。</p>
+<h2 id="1-环境设置与登录-setup--login">1. 环境设置与登录 (Setup &amp; Login)</h2>
+<pre><code class="language-bash"><span class="hljs-comment"># 登录 Hugging Face (Login to Hugging Face)</span>
+huggingface-cli login --token <span class="hljs-variable">${HUGGINGFACE_TOKEN}</span> --add-to-git-credential
+HF_USER=$(huggingface-cli <span class="hljs-built_in">whoami</span> | <span class="hljs-built_in">head</span> -n 1)
+<span class="hljs-built_in">echo</span> <span class="hljs-variable">$HF_USER</span>
+
+<span class="hljs-comment"># (可选) 添加 Hugging Face 镜像源 (Optional: Add HF Mirror Endpoint)</span>
+<span class="hljs-built_in">export</span> HF_ENDPOINT=https://hf-mirror.com
+
+<span class="hljs-comment"># 登录 Weights &amp; Biases (Login to WandB)</span>
+wandb login <span class="hljs-variable">${wandb_API}</span>
+</code></pre>
+<h2 id="2-硬件检查-hardware-check">2. 硬件检查 (Hardware Check)</h2>
+<pre><code class="language-bash"><span class="hljs-comment"># 检查视频端口 (Check video port)</span>
+ffplay /dev/video6
+
+<span class="hljs-comment"># 查找 LeRobot 兼容端口 (Find LeRobot compatible ports)</span>
+lerobot-find-port
+
+<span class="hljs-comment"># 查找 LeRobot 兼容相机 (Find LeRobot compatible cameras)</span>
+lerobot-find-cameras
+</code></pre>
+<h2 id="3-校准-calibration">3. 校准 (Calibration)</h2>
+<pre><code class="language-bash"><span class="hljs-comment"># (如果需要) 赋予端口权限 (If needed, grant port permissions)</span>
+sudo <span class="hljs-built_in">chmod</span> 666 /dev/ttyARM*
+
+<span class="hljs-comment"># 校准 Leader (Calibrate Leader)</span>
+lerobot-calibrate --teleop.type=so100_leader --teleop.port=/dev/ttyACM1 --teleop.id=my_leader
+
+<span class="hljs-comment"># 校准 Follower (Calibrate Follower)</span>
+lerobot-calibrate --robot.type=so100_follower --robot.port=/dev/ttyACM0 --robot.id=my_follower
+</code></pre>
+<h2 id="4-数据采集-data-collection">4. 数据采集 (Data Collection)</h2>
+<pre><code class="language-bash"><span class="hljs-comment"># 运行数据采集 (Run data collection)</span>
+lerobot-record --robot.type=so100_follower --robot.port=/dev/ttyACM0 --robot.id=my_follower --display_data=<span class="hljs-literal">true</span> \
+--dataset.repo_id=aa/aa1 --dataset.num_episodes=25 --dataset.reset_time_s=10 --dataset.episode_time_s=120 \
+--dataset.single_task=<span class="hljs-string">&quot;pick and place the object&quot;</span> --dataset.push_to_hub=<span class="hljs-literal">false</span> \
+--robot.cameras=<span class="hljs-string">&#x27;{
+    camera1: {&quot;type&quot;: &quot;opencv&quot;, &quot;index_or_path&quot;: 6, &quot;width&quot;: 640, &quot;height&quot;: 480, &quot;fps&quot;: 30},
+    camera2: {&quot;type&quot;: &quot;opencv&quot;, &quot;index_or_path&quot;: 2, &quot;width&quot;: 640, &quot;height&quot;: 480, &quot;fps&quot;: 30},
+    camera3: {&quot;type&quot;: &quot;opencv&quot;, &quot;index_or_path&quot;: 4, &quot;width&quot;: 640, &quot;height&quot;: 480, &quot;fps&quot;: 30}
+  }&#x27;</span>\
+--teleop.type=so100_leader --teleop.port=/dev/ttyACM1 --teleop.id=my_leader --play_sounds=<span class="hljs-literal">false</span>
+</code></pre>
+<h2 id="5-数据操作">5. 数据操作</h2>
+<p>数据可视化</p>
+<pre><code class="language-bash">lerobot-dataset-viz --repo-id aa22 --episode-index 0
+</code></pre>
+<p>查看数据集条数
+python src/tools/check_dataset.py aa50</p>
+<p>数据集合并
+python -m lerobot.scripts.lerobot_edit_dataset <br>
+--repo_id lerobot/pusht_merged <br>
+--operation.type merge <br>
+--operation.repo_ids &quot;['lerobot/pusht_train', 'lerobot/pusht_val']&quot;</p>
+<h2 id="6-模型训练-training">6. 模型训练 (Training)</h2>
+<h3 id="smolvla-带相机重命名">SmolVLA (带相机重命名)</h3>
+<p>注意：使用smolvla时，相机命名必须为<code>camera1/2/3</code>，如果不是注意<code>remap</code>。</p>
+<pre><code class="language-bash">lerobot-train --policy.path=lerobot/smolvla_base --dataset.repo_id=aa11 --batch_size=16 --steps=10000 \
+--output_dir=outputs/train/my_smolvla12 --job_name=my_smolvla_training --policy.device=cuda \
+--wandb.enable=<span class="hljs-literal">false</span> --policy.push_to_hub=<span class="hljs-literal">false</span> \
+--rename_map=<span class="hljs-string">&#x27;{&quot;observation.images.top&quot;:&quot;observation.images.camera1&quot;,&quot;observation.images.left&quot;:&quot;observation.images.camera2&quot;,&quot;observation.images.right&quot;:&quot;observation.images.camera3&quot;}&#x27;</span>
+</code></pre>
+<h3 id="smolvla-微调">SmolVLA (微调)</h3>
+<pre><code class="language-bash"><span class="hljs-comment"># smolbase 微调 (smolbase fine-tuning)</span>
+lerobot-train --policy.path=lerobot/smolvla_base --dataset.repo_id=aa_merged200 --batch_size=16 \
+--steps=20000 --output_dir=outputs/train/my_smolvla14 --job_name=my_smolvla14_training \
+--policy.device=cuda --wandb.enable=<span class="hljs-literal">true</span> --policy.push_to_hub=<span class="hljs-literal">false</span>
+</code></pre>
+<h3 id="smolvla-从头训练">SmolVLA (从头训练)</h3>
+<pre><code class="language-bash"><span class="hljs-comment"># smolbase 从头训练 (smolbase training from scratch)</span>
+lerobot-train --policy.type=smolvla --dataset.repo_id=aa_merged200 --batch_size=16 --steps=40000 \
+--output_dir=outputs/train/my_smolvla14 --job_name=my_smolvla_training --policy.device=cuda \
+--wandb.enable=<span class="hljs-literal">false</span> --policy.push_to_hub=<span class="hljs-literal">false</span>
+</code></pre>
+<h3 id="act-从头训练">ACT (从头训练)</h3>
+<pre><code class="language-bash"><span class="hljs-comment"># act 从头训练 (act training from scratch)</span>
+lerobot-train --policy.type=act --dataset.repo_id=aa50 --batch_size=8 --steps=100000 \
+--output_dir=outputs/train/my_act_single3 --job_name=my_act_single3_training \
+--policy.device=cuda --wandb.enable=<span class="hljs-literal">true</span> --policy.push_to_hub=<span class="hljs-literal">false</span>
+</code></pre>
+<h3 id="pi05-微调">Pi05 (微调)</h3>
+<pre><code class="language-bash"><span class="hljs-comment"># pi05 微调 (pi05 fine-tuning)</span>
+python src/lerobot/scripts/lerobot_train.py --dataset.repo_id=aa_merged280 --policy.type=pi05 \
+--output_dir=./outputs/pi05_training2 --job_name=pi05_training2 \
+--policy.pretrained_path=lerobot/pi05_base --policy.compile_model=<span class="hljs-literal">true</span> \
+--policy.gradient_checkpointing=<span class="hljs-literal">true</span> --wandb.enable=<span class="hljs-literal">true</span> --policy.dtype=bfloat16 \
+--steps=100000 --policy.device=cuda --batch_size=32 --policy.push_to_hub=<span class="hljs-literal">false</span>
+</code></pre>
+<h2 id="7-模型推理-inference">7. 模型推理 (Inference)</h2>
+<h3 id="单臂推理-single-arm-inference">单臂推理 (Single-Arm Inference)</h3>
+<pre><code class="language-bash">lerobot-record --robot.type=so100_follower --robot.port=/dev/ttyACM0 --robot.id=my_follower --display_data=<span class="hljs-literal">true</span> \
+--dataset.repo_id=aa/eval_97 --dataset.num_episodes=25 --dataset.reset_time_s=1 --dataset.episode_time_s=900 \
+--dataset.single_task=<span class="hljs-string">&quot;&quot;</span> --dataset.push_to_hub=<span class="hljs-literal">false</span> \
+--robot.cameras=<span class="hljs-string">&#x27;{
+    camera1: {&quot;type&quot;: &quot;opencv&quot;, &quot;index_or_path&quot;: 6, &quot;width&quot;: 640, &quot;height&quot;: 480, &quot;fps&quot;: 30},
+    camera2: {&quot;type&quot;: &quot;opencv&quot;, &quot;index_or_path&quot;: 2, &quot;width&quot;: 640, &quot;height&quot;: 480, &quot;fps&quot;: 30},
+    camera3: {&quot;type&quot;: &quot;opencv&quot;, &quot;index_or_path&quot;: 4, &quot;width&quot;: 640, &quot;height&quot;: 480, &quot;fps&quot;: 30}
+  }&#x27;</span>\
+--policy.path=./outputs/train/my_act_single2/checkpoints/last/pretrained_model
+</code></pre>
+<h3 id="双臂推理-bimanual-inference">双臂推理 (Bimanual Inference)</h3>
+<pre><code class="language-bash">lerobot-record --robot.type=bi_so100_follower --robot.left_arm_port=/dev/ttyACM1 --robot.right_arm_port=/dev/ttyACM0 \
+--robot.id=bimanual_follower --display_data=<span class="hljs-literal">true</span> --dataset.repo_id=aa/eval_1 --dataset.num_episodes=25 \
+--dataset.single_task=<span class="hljs-string">&quot;&quot;</span> --dataset.push_to_hub=<span class="hljs-literal">false</span> \
+--robot.cameras=<span class="hljs-string">&#x27;{
+    camera1: {&quot;type&quot;: &quot;opencv&quot;, &quot;index_or_path&quot;: 6, &quot;width&quot;: 640, &quot;height&quot;: 480, &quot;fps&quot;: 30},
+    camera2: {&quot;type&quot;: &quot;opencv&quot;, &quot;index_or_path&quot;: 2, &quot;width&quot;: 640, &quot;height&quot;: 480, &quot;fps&quot;: 30},
+    camera3: {&quot;type&quot;: &quot;opencv&quot;, &quot;index_or_path&quot;: 4, &quot;width&quot;: 640, &quot;height&quot;: 480, &quot;fps&quot;: 30}
+  }&#x27;</span>\
+--policy.path=./outputs/train/my_smolvla/checkpoints/001000/pretrained_model
+</code></pre>
+<p>现有数据集简介：
+aa11：25条数据，共六个药品。每条数据随机抓取1个药品。
+aa16：13条数据，共四个药品。每条数据随机抓取1个药品。
+aa22：30条数据，共两个药盒。每条数据按序依次取放2个药盒，先连花清瘟，后复方。
+aa50：80条数据，共四个药品。每条数据抓取1个药品，每次盒子中均只有一个药品，每个药品抓取20次。
+aa_merged200：200条数据，共四个药品。每条数据抓取1个药品，每次盒子中有四个药品个药品，依次抓取，直至抓完，四次为一组，重复大概33组，其余训练优先级，顺序为连花清瘟&gt;复方&gt;驱叮液&gt;安神胶囊，详见200条数据明细。
+aa_merged280：280条数据，共四个药品。aa50+aa_merged200</p>
+<p>以下附aa22、aa50、aa_merged200、aa_merged280数据集相机视角
+<img src="file:////home/zhe/project/lerobot/Camera%20perspective.jpeg" alt="alt text"></p>
+<p>模型记录：
+./outputs/train/pi05_training/checkpoints/080000/pretrained_model
+三个药品场景，依次抓取成功率80%左右，有抓取顺序。
+./outputs/train/my_act_single2/checkpoints/100000/pretrained_model
+三个药盒中任意单个药品，抓取成功率90%左右</p>
+
+            <script async src="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.js"></script>
+            
+        </body>
+        </html>
