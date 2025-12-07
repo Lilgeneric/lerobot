@@ -56,6 +56,7 @@ from lerobot.robots import (  # noqa: F401
     RobotConfig,
     make_robot_from_config,
     so100_follower,
+    so101_follower,
 )
 from lerobot.robots.robot import Robot
 from lerobot.robots.so100_follower.robot_kinematic_processor import (
