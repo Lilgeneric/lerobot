@@ -22,7 +22,6 @@ from typing import Any
 import gymnasium as gym
 import numpy as np
 import torch
-import cv2  # [新增] 显式导入 cv2
 
 from lerobot.cameras import opencv  # noqa: F401
 from lerobot.configs import parser
@@ -57,7 +56,6 @@ from lerobot.robots import (  # noqa: F401
     RobotConfig,
     make_robot_from_config,
     so100_follower,
-    so101_follower,
 )
 from lerobot.robots.robot import Robot
 from lerobot.robots.so100_follower.robot_kinematic_processor import (
@@ -72,16 +70,12 @@ from lerobot.teleoperators import (
     keyboard,  # noqa: F401
     make_teleoperator_from_config,
     so101_leader,  # noqa: F401
-    so100_leader,
 )
-from lerobot.teleoperators.keyboard import KeyboardEndEffectorTeleop, KeyboardEndEffectorTeleopConfig
 from lerobot.teleoperators.teleoperator import Teleoperator
 from lerobot.teleoperators.utils import TeleopEvents
 from lerobot.utils.constants import ACTION, DONE, OBS_IMAGES, OBS_STATE, REWARD
 from lerobot.utils.robot_utils import busy_wait
 from lerobot.utils.utils import log_say
-# [新增] 引入 lerobot_record 风格的监听器工具
-from lerobot.utils.control_utils import init_keyboard_listener, is_headless
 
 logging.basicConfig(level=logging.INFO)
 
@@ -147,9 +141,6 @@ class RobotEnv(gym.Env):
 
         self.robot = robot
         self.display_cameras = display_cameras
-        
-        # [修改] 初始化按键缓存
-        self.last_cv2_key = None
 
         # Connect to the robot if not already connected.
         if not self.robot.is_connected:
@@ -256,10 +247,6 @@ class RobotEnv(gym.Env):
         self.episode_data = None
         obs = self._get_observation()
         self._raw_joint_positions = {f"{key}.pos": obs[f"{key}.pos"] for key in self._joint_names}
-        
-        # [修改] 重置按键缓存
-        self.last_cv2_key = None
-        
         return obs, {TeleopEvents.IS_INTERVENTION: False}
 
     def step(self, action) -> tuple[dict[str, np.ndarray], float, bool, bool, dict[str, Any]]:
@@ -272,8 +259,8 @@ class RobotEnv(gym.Env):
 
         self._raw_joint_positions = {f"{key}.pos": obs[f"{key}.pos"] for key in self._joint_names}
 
-        # [修改] 始终调用 render 逻辑以确保键盘事件被刷新 (即使不显示，也需要在 render 内部处理 waitKey)
-        self.render()
+        if self.display_cameras:
+            self.render()
 
         self.current_step += 1
 
@@ -290,45 +277,17 @@ class RobotEnv(gym.Env):
         )
 
     def render(self) -> None:
-        """[重写] 显示摄像头并捕获键盘事件 (OpenCV Key Fix)"""
-        # 如果不显示摄像头，至少也要刷新事件队列，否则键盘监听会卡死
-        if not self.display_cameras:
-            cv2.waitKey(1)
-            return
+        """Display robot camera feeds."""
+        import cv2
 
         current_observation = self._get_observation()
-        
         if current_observation is not None:
-            # [修改] 正确读取 'pixels' 键
-            if "pixels" in current_observation:
-                images_dict = current_observation["pixels"]
-                for cam_key, img_tensor in images_dict.items():
-                    # 数据格式转换
-                    if hasattr(img_tensor, "numpy"):
-                        img_np = img_tensor.numpy()
-                    else:
-                        img_np = img_tensor
-                    
-                    if img_np.dtype != np.uint8:
-                        img_np = img_np.astype(np.uint8)
+            image_keys = [key for key in current_observation if "image" in key]
 
-                    cv2.imshow(f"Camera: {cam_key}", cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR))
-            
-            # 兼容旧逻辑
-            else:
-                image_keys = [key for key in current_observation if "image" in key]
-                for key in image_keys:
-                    img = current_observation[key]
-                    if hasattr(img, "numpy"): img = img.numpy()
-                    cv2.imshow(key, cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
+            for key in image_keys:
+                cv2.imshow(key, cv2.cvtColor(current_observation[key].numpy(), cv2.COLOR_RGB2BGR))
+                cv2.waitKey(1)
 
-        # [修改] 捕获按键并存入 env 实例
-        key = cv2.waitKey(1) & 0xFF
-        if key != 255:
-            self.last_cv2_key = key
-        else:
-            self.last_cv2_key = None
-            
     def close(self) -> None:
         """Close environment and disconnect robot."""
         if self.robot.is_connected:
@@ -377,13 +336,9 @@ def make_robot_env(cfg: HILSerlRobotEnvConfig) -> tuple[gym.Env, Any]:
 
     # Create base environment with safe defaults
     use_gripper = cfg.processor.gripper.use_gripper if cfg.processor.gripper is not None else True
-    
-    # [修改] 强制 display_cameras 为 True，以便启用 OpenCV 窗口接收按键
-    # display_cameras = (
-    #     cfg.processor.observation.display_cameras if cfg.processor.observation is not None else False
-    # )
-    display_cameras = True 
-    
+    display_cameras = (
+        cfg.processor.observation.display_cameras if cfg.processor.observation is not None else False
+    )
     reset_pose = cfg.processor.reset.fixed_reset_joint_positions if cfg.processor.reset is not None else None
 
     env = RobotEnv(
@@ -395,99 +350,29 @@ def make_robot_env(cfg: HILSerlRobotEnvConfig) -> tuple[gym.Env, Any]:
 
     return env, teleop_device
 
-# [修复] 自定义注入器：将 OpenCV 的按键信号转换为 LeRobot 的 Teleop 事件
-class OpenCVKeyInjector:
-    def __init__(self, original_device, env):
-        self.device = original_device
-        self.env = env
-        
-    def connect(self):
-        if hasattr(self.device, "connect"): self.device.connect()
-        
-    def get_teleop_events(self):
-        # 1. 首先获取原始设备的事件 (如果存在)
-        if hasattr(self.device, "get_teleop_events"):
-            events = self.device.get_teleop_events()
-        else:
-            # 默认所有事件为 False
-            events = {
-                TeleopEvents.IS_INTERVENTION: False, 
-                TeleopEvents.RERECORD_EPISODE: False, 
-                TeleopEvents.STOP_RECORDING: False,
-                # 注意：EXIT_EARLY 通常由外部 Listener 处理，但这里也可以加上
-            }
-        
-        # 2. 从 Env 中读取 OpenCV 捕获的按键 (来自于 render 函数)
-        cv_key = getattr(self.env, "last_cv2_key", None)
-        
-        # 3. 按键映射逻辑 (根据 ASCII 码)
-        if cv_key:
-            # print(f"DEBUG: Key Code {cv_key}") # 调试用
-            
-            # [Space] (32): 介入模式 (必须按住!)
-            if cv_key == 32: 
-                events[TeleopEvents.IS_INTERVENTION] = True
-            
-            # [S] (115): 成功/保存/下一回合
-            # 注意：这通常会触发 "Done" 信号
-            elif cv_key == ord('s'):
-                print("Command: Success (Save & Next)")
-                # 在某些 pipeline 中，success 会触发 termination
-                # 我们这里尝试触发停止录制信号，这通常意味着“本回合结束”
-                events[TeleopEvents.STOP_RECORDING] = True
-            
-            # [R] (114): 重录/丢弃当前回合
-            elif cv_key == ord('r'):
-                print("Command: Rerecord (Discard & Retry)")
-                events[TeleopEvents.RERECORD_EPISODE] = True
-
-            # [Esc] (27): 退出程序
-            # 注意：这通常在 control_loop 里处理，但传递状态也没坏处
-            elif cv_key == 27:
-                pass 
-
-        return events
-        
-    def get_action(self):
-        # 动作直接透传原始设备 (例如主臂)
-        if hasattr(self.device, "get_action"):
-            return self.device.get_action()
-        # 如果没有动作设备，返回空字典或默认值
-        return {}
-
-    def __getattr__(self, name):
-        # 代理其他所有属性调用
-        return getattr(self.device, name)
 
 def make_processors(
     env: gym.Env, teleop_device: Teleoperator | None, cfg: HILSerlRobotEnvConfig, device: str = "cpu"
 ) -> tuple[
-    DataProcessorPipeline[EnvTransition, EnvTransition],
-    DataProcessorPipeline[EnvTransition, EnvTransition],
-    Teleoperator | None,
+    DataProcessorPipeline[EnvTransition, EnvTransition], DataProcessorPipeline[EnvTransition, EnvTransition]
 ]:
-    """Create environment and action processors."""
+    """Create environment and action processors.
+
+    Args:
+        env: Robot environment instance.
+        teleop_device: Teleoperator device for intervention.
+        cfg: Processor configuration.
+        device: Target device for computations.
+
+    Returns:
+        Tuple of (environment processor, action processor).
+    """
     terminate_on_success = (
         cfg.processor.reset.terminate_on_success if cfg.processor.reset is not None else True
     )
 
     if cfg.name == "gym_hil":
-        # ... (GymHIL logic unchanged) ...
-        event_teleop_device = teleop_device
-        if teleop_device and not hasattr(teleop_device, "get_teleop_events"):
-            print("⚠️ GymHIL: Teleop device does not support events. Initializing Keyboard.")
-            try:
-                from lerobot.teleoperators.keyboard import KeyboardEndEffectorTeleop, KeyboardEndEffectorTeleopConfig
-                kb_config = KeyboardEndEffectorTeleopConfig()
-                event_teleop_device = KeyboardEndEffectorTeleop(kb_config)
-                event_teleop_device.connect()
-                print("✅ Keyboard connected for events.")
-            except Exception as e:
-                print(f"❌ Failed to init keyboard: {e}")
-
         action_pipeline_steps = [
-            AddTeleopActionAsComplimentaryDataStep(teleop_device=teleop_device),
-            AddTeleopEventsAsInfoStep(teleop_device=event_teleop_device),
             InterventionActionProcessorStep(terminate_on_success=terminate_on_success),
             Torch2NumpyActionProcessorStep(),
         ]
@@ -503,12 +388,10 @@ def make_processors(
             steps=env_pipeline_steps, to_transition=identity_transition, to_output=identity_transition
         ), DataProcessorPipeline(
             steps=action_pipeline_steps, to_transition=identity_transition, to_output=identity_transition
-        ), teleop_device
+        )
 
-    # ==========================
-    # 实机环境处理逻辑 (修改重点)
-    # ==========================
-    
+    # Full processor pipeline for real robot environment
+    # Get robot and motor information for kinematics
     motor_names = list(env.robot.bus.motors.keys())
 
     # Set up kinematics solver if inverse kinematics is configured
@@ -576,31 +459,9 @@ def make_processors(
     env_pipeline_steps.append(AddBatchDimensionProcessorStep())
     env_pipeline_steps.append(DeviceProcessorStep(device=device))
 
-    # --- [修改] 初始化事件设备 ---
-    event_teleop_device = teleop_device
-    # 如果主手不支持事件（例如您使用的是 Leader Arm），则尝试初始化一个键盘作为 Backup
-    if not hasattr(teleop_device, "get_teleop_events"):
-        print("⚠️ Teleop device does not support events. Initializing Backup Keyboard.")
-        try:
-            from lerobot.teleoperators.keyboard import KeyboardEndEffectorTeleop, KeyboardEndEffectorTeleopConfig
-            kb_config = KeyboardEndEffectorTeleopConfig()
-            backup_kb = KeyboardEndEffectorTeleop(kb_config)
-            backup_kb.connect()
-            event_teleop_device = backup_kb
-            print("✅ Backup Keyboard connected.")
-        except Exception as e:
-            print(f"❌ Failed to init backup keyboard: {e}")
-            raise
-
-    # --- [修改] 这里的关键：用 OpenCVKeyInjector 包装设备 ---
-    # 这样，无论物理键盘是否被屏蔽，只要 OpenCV 窗口有焦点，空格键就会生效
-    event_teleop_device = OpenCVKeyInjector(event_teleop_device, env)
-
     action_pipeline_steps = [
-        # 动作依旧来自原始设备（主臂）
         AddTeleopActionAsComplimentaryDataStep(teleop_device=teleop_device),
-        # 事件来自包装后的注入器（OpenCV + 原始设备）
-        AddTeleopEventsAsInfoStep(teleop_device=event_teleop_device),
+        AddTeleopEventsAsInfoStep(teleop_device=teleop_device),
         InterventionActionProcessorStep(
             use_gripper=cfg.processor.gripper.use_gripper if cfg.processor.gripper is not None else False,
             terminate_on_success=terminate_on_success,
@@ -641,7 +502,8 @@ def make_processors(
         steps=env_pipeline_steps, to_transition=identity_transition, to_output=identity_transition
     ), DataProcessorPipeline(
         steps=action_pipeline_steps, to_transition=identity_transition, to_output=identity_transition
-    ), teleop_device
+    )
+
 
 def step_env_and_process_transition(
     env: gym.Env,
@@ -673,6 +535,8 @@ def step_env_and_process_transition(
     processed_action = processed_action_transition[TransitionKey.ACTION]
 
     obs, reward, terminated, truncated, info = env.step(processed_action)
+    # info always set IS_INTERVENTION=False
+    info.pop(TeleopEvents.IS_INTERVENTION, None)
 
     reward = reward + processed_action_transition[TransitionKey.REWARD]
     terminated = terminated or processed_action_transition[TransitionKey.DONE]
@@ -716,9 +580,9 @@ def control_loop(
 
     print(f"Starting control loop at {cfg.env.fps} FPS")
     print("Controls:")
-    print("- CLICK THE CAMERA WINDOW to enable keys!") # [提示]
-    print("- Hold [Space] for intervention")
-    print("- Press [Esc] to exit")
+    print("- Use gamepad/teleop device for intervention")
+    print("- When not intervening, robot will stay still")
+    print("- Press Ctrl+C to exit")
 
     # Reset environment and processors
     obs, info = env.reset()
@@ -737,13 +601,7 @@ def control_loop(
 
     dataset = None
     if cfg.mode == "record":
-        # [修改] 手动构建 action_features，直接使用环境的 action_space
-        # 这样可以避开 teleop_device 返回的嵌套字典导致的 KeyError
-        action_features = {
-            "dtype": "float32",
-            "shape": env.action_space.shape,
-            "names": None,
-        }
+        action_features = teleop_device.action_features
         features = {
             ACTION: action_features,
             REWARD: {"dtype": "float32", "shape": (1,), "names": None},
@@ -785,16 +643,7 @@ def control_loop(
     episode_step = 0
     episode_start_time = time.perf_counter()
 
-    # [修改] 使用 lerobot_record 风格的监听器
-    # 这允许在终端中捕捉 Ctrl+C 或 Esc (如果终端有焦点)
-    listener, events = init_keyboard_listener()
-
     while episode_idx < cfg.dataset.num_episodes_to_record:
-        # [修改] 检查退出信号
-        if events["exit_early"]:
-            print("Exit signal received via Listener.")
-            break
-
         step_start_time = time.perf_counter()
 
         # Create a neutral action (no movement)
@@ -868,10 +717,6 @@ def control_loop(
         # Maintain fps timing
         busy_wait(dt - (time.perf_counter() - step_start_time))
 
-    # [修改] 清理监听器
-    if not is_headless() and listener is not None:
-        listener.stop()
-
     if dataset is not None and cfg.dataset.push_to_hub:
         logging.info("Pushing dataset to hub")
         dataset.push_to_hub()
@@ -909,9 +754,7 @@ def replay_trajectory(
 def main(cfg: GymManipulatorConfig) -> None:
     """Main entry point for gym manipulator script."""
     env, teleop_device = make_robot_env(cfg.env)
-    # env_processor, action_processor = make_processors(env, teleop_device, cfg.env, cfg.device)
-    # [修改] 接收第三个参数 teleop_device
-    env_processor, action_processor, teleop_device = make_processors(env, teleop_device, cfg.env, cfg.device)
+    env_processor, action_processor = make_processors(env, teleop_device, cfg.env, cfg.device)
 
     print("Environment observation space:", env.observation_space)
     print("Environment action space:", env.action_space)

@@ -61,6 +61,8 @@ class FindJointLimitsConfig:
     teleop_time_s: float = 30
     # Display all cameras on screen
     display_data: bool = False
+    urdf_path: str = None
+    target_frame_name: str = None
 
 
 @draccus.wrap()
@@ -77,7 +79,21 @@ def find_joint_and_ee_bounds(cfg: FindJointLimitsConfig):
         # Note to be compatible with the rest of the codebase,
         # we are using the new calibration method for so101 and so100
         robot_type = "so_new_calibration"
-    kinematics = RobotKinematics(cfg.robot.urdf_path, cfg.robot.target_frame_name)
+    # kinematics = RobotKinematics(cfg.robot.urdf_path, cfg.robot.target_frame_name)
+
+    urdf = cfg.urdf_path
+    target = cfg.target_frame_name
+
+    if urdf is None:
+        urdf = getattr(cfg.robot, "urdf_path", None)
+    if target is None:
+        target = getattr(cfg.robot, "target_frame_name", "gripper_frame_link") 
+
+    if urdf is None:
+        raise ValueError("错误：未找到 URDF 路径。请在命令行中使用 --urdf_path=/path/to/urdf 指定。")
+    
+    print(f"Loading URDF from: {urdf}")
+    kinematics = RobotKinematics(urdf, target)
 
     # Initialize min/max values
     observation = robot.get_observation()
