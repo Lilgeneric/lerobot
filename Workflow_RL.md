@@ -29,7 +29,7 @@ HIL-SERL 的工作流。
       --teleop.id=my_leader \
       --urdf_path=/home/generic/lerobot/Simulation/SO101/so101_new_calib.urdf \
       --target_frame_name=gripper_frame_link \
-      --teleop_time_s=60
+      --teleop_time_s=120
     ```
     *(注意：请根据你的实际端口号和机器人ID修改参数)*
   * [cite_start]**功能：** 运行脚本后，移动主臂带动从臂遍历任务空间。脚本会输出末端执行器的最大/最小位置（Max/Min ee position）[cite: 56, 59]。
@@ -45,7 +45,7 @@ HIL-SERL 的工作流。
   * [cite_start]**配置修改建议：** 确保配置文件中 `env.teleop.type` 设置为你的主臂型号，且 `mode` 设置为 `"record"` [cite: 62, 78]。
   * **指令：**
     ```bash
-    python -m lerobot.rl.gym_manipulator --config_path src/lerobot/configs/env_config_so100.json
+    python -m lerobot.rl.gym_manipulator --config_path src/lerobot/json/env_config_keyboard.json
     ```
   * [cite_start]**功能：** 启动录制模式。你需要操作主臂完成任务，并在成功时按键盘 `s` 键，失败按 `esc` 键（或配置文件指定的按键）[cite: 79, 81]。这将生成用于预训练的数据集。
 

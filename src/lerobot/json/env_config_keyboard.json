@@ -22,8 +22,8 @@
       },
       "reset": {
         "reset_time_s": 5.0,
-        "control_time_s": 20.0,
-        "fixed_reset_joint_positions": [ 35.7802,  27.3407, -12.8791,  84.6154,  21.9341,   2.1277],
+        "control_time_s": 60.0,
+        "fixed_reset_joint_positions": [ 1.9759, -34.7118, 34.2214, 43.4361, -0.0244, 1.6656],
         "terminate_on_success": true
       },
 
@@ -48,26 +48,26 @@
       "use_degrees": true,
       "cameras": {
         "top": {
-                    "type": "opencv",
-                    "index_or_path": 6,
-                    "height": 480,
-                    "width": 640,
-                    "fps": 30
-                },
-                "wrist": {
-                    "type": "opencv",
-                    "index_or_path": 2,
-                    "height": 480,
-                    "width": 640,
-                    "fps": 30
-                },
-                "side": {
-                    "type": "opencv",
-                    "index_or_path": 4,
-                    "height": 480,
-                    "width": 640,
-                    "fps": 30
-                }
+          "type": "opencv",
+          "index_or_path": 0,
+          "height": 480,
+          "width": 640,
+          "fps": 30
+        },
+        "wrist": {
+          "type": "opencv",
+          "index_or_path": 2,
+          "height": 480,
+          "width": 640,
+          "fps": 30
+        },
+        "side": {
+          "type": "opencv",
+          "index_or_path": 3,
+          "height": 480,
+          "width": 640,
+          "fps": 30
+        }
       }
     },
     "teleop": {
@@ -76,7 +76,7 @@
     }
   },
   "dataset": {
-    "repo_id": "hxdoso/push_cube",
+    "repo_id": "hxdoso/push_cube6",
     "root": null,
     "task": "Move the object inside the yellow area",
     "num_episodes_to_record": 20,
