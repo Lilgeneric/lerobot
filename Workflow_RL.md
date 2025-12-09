@@ -72,6 +72,12 @@ HIL-SERL 依赖视觉模型来自动判断任务是否成功，从而给出奖�
   * [cite_start]**功能：** 使用刚才收集的示教数据（包含成功和失败的案例）训练一个视觉分类器 [cite: 111]。
   * [cite_start]**后续操作：** 训练完成后，将模型路径更新到 HIL-SERL 的环境配置文件中 (`reward_classifier.pretrained_path`) [cite: 112]。
 
+  * [cite_start]**测试train完的reward_classifier** 
+  * **指令：**
+    ```bash
+    python -m lerobot.rl.gym_manipulator --config_path src/lerobot/json/env_config_keyboard_rc.json
+    ```
+
 -----
 
 ### 第五阶段：启动 HIL-SERL 训练（Actor-Learner 架构）
@@ -82,15 +88,16 @@ HIL-SERL 使用分布式架构，需要同时开启两个终端窗口，分别�
 
   * **指令：**
     ```bash
-    python -m lerobot.rl.learner --config_path src/lerobot/configs/train_config_hilserl_so100.json
+    python -m lerobot.rl.learner --config_path src/lerobot/json/rl_train_config.json
     ```
   * [cite_start]**功能：** 初始化策略网络，处理数据并更新策略权重。它会开启一个服务器等待 Actor 连接 [cite: 125]。
+  * [observation.state]**修改：** shape为18维，就是6维的关节角度还有上面所讲的其它附加信息。请用上面采集数据集目录下的meta/stats.json中的统计信息填充此配置文件。
 
 **7. 启动 Actor (终端 2)**
 
   * **指令：**
     ```bash
-    python -m lerobot.rl.actor --config_path src/lerobot/configs/train_config_hilserl_so100.json
+    python -m lerobot.rl.actor --config_path src/lerobot/json/rl_train_config.json
     ```
   * [cite_start]**功能：** 连接到 Learner，在真实机器人上执行策略。它会收集经验数据发送给 Learner，并定期拉取最新的策略权重 [cite: 125, 126]。
 

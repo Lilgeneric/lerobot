@@ -22,11 +22,16 @@
         "use_gripper": true,
         "gripper_penalty": 0.0
       },
+      "reward_classifier": {
+        "pretrained_path": "/home/generic/lerobot/outputs/train/2025-12-09/01-09-27_reward-classifier/checkpoints/last/pretrained_model",
+        "success_threshold": 0.7,
+        "success_reward": 1.0
+      },
       "reset": {
         "reset_time_s": 5.0,
-        "control_time_s": 30.0,
+        "control_time_s": 120.0,
         "fixed_reset_joint_positions": [3.1833, -84.0739, 65.8245, 72.1586, -0.1709, 1.6656],
-        "terminate_on_success": false
+        "terminate_on_success": true
       },
 
       "inverse_kinematics": {
@@ -78,13 +83,13 @@
     }
   },
   "dataset": {
-    "repo_id": "place/aa12",
+    "repo_id": "place/reward_classifier_test",
     "root": null,
     "task": "Move the object inside the yellow area",
     "num_episodes_to_record": 40,
     "replay_episode": 0,
     "push_to_hub": false
   },
-  "mode": "record",
+  "mode": null,
   "device": "cuda"
 }

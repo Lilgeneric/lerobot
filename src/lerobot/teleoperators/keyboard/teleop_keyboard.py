@@ -200,9 +200,9 @@ class KeyboardEndEffectorTeleop(KeyboardTeleop):
                 delta_x = int(val)
             elif key == 's':
                 delta_x = -int(val)
-            elif key == 'v':
+            elif key == 'j':
                 delta_z = -int(val)
-            elif key == 'f':
+            elif key == 'k':
                 delta_z = int(val)
             else:
                 # If the key is pressed, add it to the misc_keys_queue

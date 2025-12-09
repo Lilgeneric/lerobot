@@ -634,7 +634,7 @@ def control_loop(
             cfg.env.fps,
             root=cfg.dataset.root,
             use_videos=True,
-            image_writer_threads=4,
+            image_writer_threads=0,
             image_writer_processes=0,
             features=features,
         )
@@ -705,6 +705,15 @@ def control_loop(
                 else:
                     logging.info(f"Saving episode {episode_idx}")
                     dataset.save_episode()
+                    print("Waiting for video encoder to finish...")
+                    time.sleep(2.0) 
+                    import gc
+                    gc.collect()
+                    if episode_idx < cfg.dataset.num_episodes_to_record:
+                        print(f"👉 请开始第 {episode_idx + 1} 轮，共{cfg.dataset.num_episodes_to_record}轮")
+                    else:
+                        print("👉 录制完成，辛苦了！")
+
 
             # Reset for new episode
             obs, info = env.reset()

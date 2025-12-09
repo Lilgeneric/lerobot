@@ -1,0 +1,67 @@
+{
+    "dataset": {
+        "repo_id": "place/aa12",
+        "root": null
+    },
+    "policy": {
+        "repo_id": "test",
+        "type": "reward_classifier",
+        "model_name": "helper2424/resnet10",
+        "model_type": "cnn",
+        "num_cameras": 3,
+        "num_classes": 2,
+        "hidden_dim": 256,
+        "dropout_rate": 0.1,
+        "learning_rate": 1e-4,
+        "device": "cuda",
+        "use_amp": true,
+        "input_features": {
+            "observation.images.top": {
+                "type": "VISUAL",
+                "shape": [
+                    3,
+                    128,
+                    128
+                ]
+            },
+            "observation.images.wrist": {
+                "type": "VISUAL",
+                "shape": [
+                    3,
+                    128,
+                    128
+                ]
+            },
+            "observation.images.side": {
+                "type": "VISUAL",
+                "shape": [
+                    3,
+                    128,
+                    128
+                ]
+            },
+            "observation.state": {
+                "type": "STATE",
+                "shape": [6]
+            }
+        }
+    },
+    "batch_size": 64,
+    "num_workers": 4,
+    "steps": 100000,
+    "log_freq": 10,
+    "eval_freq": 2000,
+    "save_freq": 2000,
+    "save_checkpoint": true,
+    "seed": 2,
+    "resume": false,
+    "optimizer": {
+        "grad_clip_norm": 10.0
+    },
+    "wandb": {
+        "enable": true,
+        "project": "reward-classifier",
+        "disable_artifact": false
+    },
+    "job_name": "reward-classifier"
+}
