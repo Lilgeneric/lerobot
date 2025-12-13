@@ -1,6 +1,6 @@
 {
     "dataset": {
-        "repo_id": "place/aa12",
+        "repo_id": "place/aa29",
         "root": null
     },
     "policy": {
@@ -39,14 +39,10 @@
                     128,
                     128
                 ]
-            },
-            "observation.state": {
-                "type": "STATE",
-                "shape": [6]
             }
         }
     },
-    "batch_size": 64,
+    "batch_size": 256,
     "num_workers": 4,
     "steps": 100000,
     "log_freq": 10,

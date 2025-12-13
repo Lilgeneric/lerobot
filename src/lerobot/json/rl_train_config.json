@@ -15,7 +15,7 @@
         "disable_artifact": true
     },
     "dataset": {
-        "repo_id": "place/aa12",
+        "repo_id": "place/aa29",
         "use_imagenet_stats": false
     },
     "policy": {
@@ -59,17 +59,17 @@
             "observation.images.side": { "mean": [0.485, 0.456, 0.406], "std": [0.229, 0.224, 0.225] },
             "observation.state": {
                 "min": [
-                    -49.4945068359375,
-                    -83.95604705810547,
-                    -52.92307662963867,
-                    -12.263736724853516,
-                    -43.38461685180664,
-                    2.161100149154663,
-                    -21.09890365600586,
-                    -36.92310333251953,
-                    -64.17583465576172,
-                    -34.28571701049805,
-                    -15.824174880981445,
+                    -36.83516311645508,
+                    -64.43955993652344,
+                    -80.0879135131836,
+                    42.41758346557617,
+                    -44.087913513183594,
+                    1.6371971368789673,
+                    -23.736248016357422,
+                    -84.39559936523438,
+                    -83.51646423339844,
+                    -58.022003173828125,
+                    -18.4615421295166,
                     0.0,
                     0.0,
                     0.0,
@@ -79,28 +79,28 @@
                     0.0
                 ],
                 "max": [
-                    50.81318664550781,
-                    47.38461685180664,
-                    84.30769348144531,
-                    72.04395294189453,
-                    39.60439682006836,
-                    2.226588010787964,
-                    19.340667724609375,
-                    50.98899841308594,
-                    43.95606994628906,
-                    27.252769470214844,
-                    15.824174880981445,
-                    0.6548786163330078,
+                    45.36263656616211,
+                    60.83516311645508,
+                    71.9120864868164,
+                    91.73626708984375,
+                    33.53845977783203,
+                    1.6371971368789673,
+                    21.098899841308594,
+                    49.23076629638672,
+                    147.69229125976562,
+                    37.80220031738281,
+                    18.461538314819336,
+                    0.0,
+                    4.0,
+                    61.0,
+                    52.0,
                     3.0,
-                    35.0,
-                    29.0,
-                    5.0,
-                    3.0,
+                    4.0,
                     1.0
                 ]
             },
             "action": {
-                "min": [-1.0, -1.0, -1.0, -1.0],
+                "min": [-1.0, -1.0, -1.0, 1.0],
                 "max": [1.0, 1.0, 1.0, 1.0]
             }
         },
@@ -112,7 +112,7 @@
         "shared_encoder": true,
         "online_steps": 1000000,
         "online_buffer_capacity": 30000,
-        "offline_buffer_capacity": 10000,
+        "offline_buffer_capacity": 20000,
         "online_step_before_learning": 10,
         "policy_update_freq": 1,
         "discount": 0.97,
@@ -163,21 +163,21 @@
             "cameras": {
                 "top": {
                     "type": "opencv",
-                    "index_or_path": 0,
+                    "index_or_path": 9,
                     "height": 480,
                     "width": 640,
                     "fps": 30
                 },
                 "wrist": {
                     "type": "opencv",
-                    "index_or_path": 6,
+                    "index_or_path": 3,
                     "height": 480,
                     "width": 640,
                     "fps": 30
                 },
                 "side": {
                     "type": "opencv",
-                    "index_or_path": 4,
+                    "index_or_path": 5,
                     "height": 480,
                     "width": 640,
                     "fps": 30
@@ -197,9 +197,9 @@
             },
             "image_preprocessing": {
                 "crop_params_dict": {
-                    "observation.images.top": [76, 84, 248, 448],
+                    "observation.images.top": [179, 122, 138, 245],
                     "observation.images.wrist": [0, 0, 480, 640],
-                    "observation.images.side": [97, 27, 299, 612]
+                    "observation.images.side": [110, 241, 159, 266]
                 },
                 "resize_size": [128, 128]
             },
@@ -208,12 +208,12 @@
                 "gripper_penalty": 0
             },
             "reward_classifier": {
-                "pretrained_path": "/home/generic/lerobot/outputs/train/2025-12-09/01-09-27_reward-classifier/checkpoints/last/pretrained_model",
+                "pretrained_path": "/home/generic/lerobot/outputs/train/2025-12-12/04-28-11_reward-classifier/checkpoints/last/pretrained_model",
                 "success_threshold": 0.7,
                 "success_reward": 1.0
             },
             "reset": {
-                "fixed_reset_joint_positions": [3.1833, -84.0739, 65.8245, 72.1586, -0.1709, 1.6656],
+                "fixed_reset_joint_positions": [-28.5401, -1.1879, 19.1182, 48.6344, -36.5324, 1.3991],
                 "reset_time_s": 5,
                 "control_time_s": 40.0,
                 "terminate_on_success": true
@@ -222,8 +222,8 @@
                 "urdf_path": "/home/generic/lerobot/Simulation/SO101/so101_new_calib.urdf",
                 "target_frame_name": "gripper_frame_link",
                 "end_effector_bounds": {
-                    "min": [0.0084, -0.1797, -0.1024],
-                    "max": [0.3647, 0.1749, 0.2556]
+                    "min": [0.1085, -0.1985, -0.0132],
+                    "max": [0.3346, 0.175, 0.0778]
                 },
                 "end_effector_step_sizes": {
                     "x": 0.005,

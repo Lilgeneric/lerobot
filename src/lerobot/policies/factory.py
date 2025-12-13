@@ -422,18 +422,23 @@ def make_policy(
     if not rename_map:
         expected_features = set(cfg.input_features.keys()) | set(cfg.output_features.keys())
         provided_features = set(features.keys())
-        if expected_features and provided_features != expected_features:
+        if expected_features:
             missing = expected_features - provided_features
             extra = provided_features - expected_features
-            # TODO (jadechoghari): provide a dynamic rename map suggestion to the user.
-            raise ValueError(
-                f"Feature mismatch between dataset/environment and policy config.\n"
-                f"- Missing features: {sorted(missing) if missing else 'None'}\n"
-                f"- Extra features: {sorted(extra) if extra else 'None'}\n\n"
-                f"Please ensure your dataset and policy use consistent feature names.\n"
-                f"If your dataset uses different observation keys (e.g., cameras named differently), "
-                f"use the `--rename_map` argument, for example:\n"
-                f'  --rename_map=\'{{"observation.images.left": "observation.images.camera1", '
-                f'"observation.images.top": "observation.images.camera2"}}\''
-            )
+
+            # Errors are thrown only when the necessary characteristics are missing
+            if missing:
+                raise ValueError(
+                    f"Feature mismatch between dataset/environment and policy config.\n"
+                    f"- Missing features: {sorted(missing)}\n"
+                    f"The policy expects these features but they are not provided by the dataset or environment.\n"
+                    f"Please check your policy configuration or dataset."
+                )
+            
+            # If there are extra features, only print a warning and do not interrupt the program.
+            if extra:
+                logging.warning(
+                    f"⚠️  Ignoring extra features found in dataset/environment: {sorted(extra)}. "
+                    "These are not used by the policy."
+                )
     return policy

@@ -67,7 +67,7 @@ HIL-SERL 依赖视觉模型来自动判断任务是否成功，从而给出奖�
 
   * **指令：**
     ```bash
-    lerobot-train --config_path src/lerobot/configs/reward_classifier_train_config.json
+    lerobot-train --config_path src/lerobot/json/reward_classifier_train_config.json
     ```
   * [cite_start]**功能：** 使用刚才收集的示教数据（包含成功和失败的案例）训练一个视觉分类器 [cite: 111]。
   * [cite_start]**后续操作：** 训练完成后，将模型路径更新到 HIL-SERL 的环境配置文件中 (`reward_classifier.pretrained_path`) [cite: 112]。

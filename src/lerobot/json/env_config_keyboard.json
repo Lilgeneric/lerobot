@@ -11,9 +11,9 @@
       },
       "image_preprocessing": {
         "crop_params_dict": {
-          "observation.images.top": [76, 84, 248, 448],
+          "observation.images.top": [179, 122, 138, 245],
           "observation.images.wrist": [0, 0, 480, 640],
-          "observation.images.side": [97, 27, 299, 612]
+          "observation.images.side": [110, 241, 159, 266]
 
         },
         "resize_size": [128, 128]
@@ -24,8 +24,8 @@
       },
       "reset": {
         "reset_time_s": 5.0,
-        "control_time_s": 30.0,
-        "fixed_reset_joint_positions": [3.1833, -84.0739, 65.8245, 72.1586, -0.1709, 1.6656],
+        "control_time_s": 25.0,
+        "fixed_reset_joint_positions": [-28.5401, -1.1879, 19.1182, 48.6344, -36.5324, 1.3991],
         "terminate_on_success": false
       },
 
@@ -51,14 +51,14 @@
       "cameras": {
         "top": {
           "type": "opencv",
-          "index_or_path": 0,
+          "index_or_path": 6,
           "height": 480,
           "width": 640,
           "fps": 30
         },
         "wrist": {
           "type": "opencv",
-          "index_or_path": 6,
+          "index_or_path": 2,
           "height": 480,
           "width": 640,
           "fps": 30
@@ -78,10 +78,10 @@
     }
   },
   "dataset": {
-    "repo_id": "place/aa12",
+    "repo_id": "place/aa29",
     "root": null,
     "task": "Move the object inside the yellow area",
-    "num_episodes_to_record": 40,
+    "num_episodes_to_record": 60,
     "replay_episode": 0,
     "push_to_hub": false
   },
