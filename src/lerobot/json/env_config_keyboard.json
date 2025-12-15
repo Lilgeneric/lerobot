@@ -12,9 +12,6 @@
       "image_preprocessing": {
         "crop_params_dict": {
           "observation.images.top": [179, 122, 138, 245],
-          "observation.images.wrist": [0, 0, 480, 640],
-          "observation.images.side": [110, 241, 159, 266]
-
         },
         "resize_size": [128, 128]
       },
@@ -51,21 +48,7 @@
       "cameras": {
         "top": {
           "type": "opencv",
-          "index_or_path": 6,
-          "height": 480,
-          "width": 640,
-          "fps": 30
-        },
-        "wrist": {
-          "type": "opencv",
           "index_or_path": 2,
-          "height": 480,
-          "width": 640,
-          "fps": 30
-        },
-        "side": {
-          "type": "opencv",
-          "index_or_path": 4,
           "height": 480,
           "width": 640,
           "fps": 30

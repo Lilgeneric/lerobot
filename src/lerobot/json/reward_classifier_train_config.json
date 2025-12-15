@@ -1,6 +1,6 @@
 {
     "dataset": {
-        "repo_id": "place/aa29",
+        "repo_id": "place/aa_merged105",
         "root": null
     },
     "policy": {
@@ -8,7 +8,7 @@
         "type": "reward_classifier",
         "model_name": "helper2424/resnet10",
         "model_type": "cnn",
-        "num_cameras": 3,
+        "num_cameras": 1,
         "num_classes": 2,
         "hidden_dim": 256,
         "dropout_rate": 0.1,
@@ -17,22 +17,6 @@
         "use_amp": true,
         "input_features": {
             "observation.images.top": {
-                "type": "VISUAL",
-                "shape": [
-                    3,
-                    128,
-                    128
-                ]
-            },
-            "observation.images.wrist": {
-                "type": "VISUAL",
-                "shape": [
-                    3,
-                    128,
-                    128
-                ]
-            },
-            "observation.images.side": {
                 "type": "VISUAL",
                 "shape": [
                     3,
@@ -56,8 +40,8 @@
     },
     "wandb": {
         "enable": true,
-        "project": "reward-classifier",
+        "project": "reward-classifier_merged105",
         "disable_artifact": false
     },
-    "job_name": "reward-classifier"
+    "job_name": "reward-classifier_merged105"
 }
